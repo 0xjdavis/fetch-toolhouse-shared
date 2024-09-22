@@ -54,7 +54,8 @@ async def get_answer(query):
     # Define the Groq model we want to use
     #MODEL = 'mixtral-8x7b-32768'  # No result, but got code. 
     #MODEL = 'llama2-70b-4096'  # Don't use this.
-    MODEL = 'llama3-groq-70b-8192-tool-use-preview'
+    #MODEL = 'llama3-groq-70b-8192-tool-use-preview'
+    MODEL = 'llama3-8b-8192'
     # MODEL = 'gemma-7b-it' 
     
     messages = [{
