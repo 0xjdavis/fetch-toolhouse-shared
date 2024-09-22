@@ -7,8 +7,8 @@ import asyncio
 import threading
 
 # Set the OpenAI API key correctly
-openai.api_key = st.secrets["OPENAI_API_KEY"]
-th = Toolhouse(access_token=st.secrets["TOOLHOUSEAI_API_KEY"], provider="openai")
+openai.api_key = st.secrets["OPENAI_KEY"]
+th = Toolhouse(access_token=st.secrets["TOOLHOUSE_KEY"], provider="openai")
 AGENT_MAILBOX_KEY = "911d1aac-059c-4cae-ab16-cfc75362953f"
 
 class ToolHouseAIRequest(Model):
