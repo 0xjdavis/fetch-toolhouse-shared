@@ -2,3 +2,5 @@ streamlit
 toolhouse
 requests
 uagents
+groq
+openai
