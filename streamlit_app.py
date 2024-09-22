@@ -5,26 +5,17 @@ from uagents import Agent, Context, Model, Protocol
 from uagents.setup import fund_agent_if_low
 import asyncio
 import threading
-import uuid
 
 # API KEYS
 openai.api_key = st.secrets["OPENAI_KEY"]
-TOOLHOUSE_KEY = st.secrets["TOOLHOUSE_KEY"]
+th = Toolhouse(access_token=st.secrets["TOOLHOUSE_KEY"], provider="openai")
 AGENT_MAILBOX_KEY = st.secrets["TH_AGENT_MAILBOX_KEY"]
-
-# Generate a unique user ID for Toolhouse
-USER_ID = str(uuid.uuid4())
-
-th = Toolhouse(
-    access_token=TOOLHOUSE_KEY,
-    provider="openai",
-    user_id=USER_ID  # Add the user ID here
-)
 
 class ToolHouseAIRequest(Model):
     query: str
 
 toolhouseai_proto = Protocol(name="ToolhouseAI-Protocol", version="0.1.0")
+
 
 # AGENT
 def initialize_agent():
@@ -58,8 +49,11 @@ def initialize_agent():
     
     return agent, loop
 
+
 # OPEN AI QUERY
 async def get_answer(query):
+    # Define the OpenAI model we want to use
+    # MODEL = 'gpt-4'
     MODEL = 'gpt-4o-mini'
 
     messages = [{
@@ -67,39 +61,36 @@ async def get_answer(query):
         "content": query
     }]
 
-    try:
-        response = openai.chat.completions.create(
-            model=MODEL,
-            messages=messages,
-            tools=th.get_tools()
-        )
+    response = openai.chat.completions.create(
+        model=MODEL,
+        messages=messages,
+        # Passes Code Execution as a tool
+        tools=th.get_tools()
+    )
 
-        generated_code = response.choices[0].message.content
+    # Get the generated code
+    generated_code = response.choices[0].message.content
 
-        messages += th.run_tools(response)
+    # Runs the Code Execution tool, gets the result,
+    # and appends it to the context
+    messages += th.run_tools(response)
 
-        final_response = openai.chat.completions.create(
-            model=MODEL,
-            messages=messages,
-            tools=th.get_tools()
-        )
+    final_response = openai.chat.completions.create(
+        model=MODEL,
+        messages=messages,
+        tools=th.get_tools()
+    )
 
-        execution_result = final_response.choices[0].message.content
+    execution_result = final_response.choices[0].message.content
 
-        if "```python" in execution_result and "```" in execution_result:
-            start = execution_result.find("```python") + len("```python")
-            end = execution_result.find("```", start)
-            execution_result_code = execution_result[start:end].strip()
-        else:
-            execution_result_code = execution_result
+    if "```python" in execution_result and "```" in execution_result:
+        start = execution_result.find("```python") + len("```python")
+        end = execution_result.find("```", start)
+        execution_result_code = execution_result[start:end].strip()
+    else:
+        execution_result_code = execution_result
 
-        return generated_code, execution_result_code
-    except openai.OpenAIError as e:
-        st.error(f"OpenAI API error: {str(e)}")
-        raise
-    except Exception as e:
-        st.error(f"An unexpected error occurred: {str(e)}")
-        raise
+    return generated_code, execution_result_code
 
 # Initialize agent and event loop
 agent, loop = initialize_agent()
@@ -112,7 +103,7 @@ def run_agent():
 agent_thread = threading.Thread(target=run_agent, daemon=True)
 agent_thread.start()
 
-# Streamlit app
+# APP
 st.title("Toolhouse & Fetch Agent with Code Interpreter")
 
 query = st.text_input("Enter your query:")
@@ -129,10 +120,6 @@ if st.button("Submit"):
                 st.subheader("Code:")
                 st.code(execution_result, language="python")
             except Exception as e:
-                st.error(f"An error occurred: {type(e).__name__}: {str(e)}")
-                st.error("Please check your API keys and try again.")
+                st.error(f"An error occurred: {str(e)}")
     else:
         st.warning("Please enter a query.")
-
-# Display the generated user ID
-st.sidebar.write(f"User ID: {USER_ID}")
