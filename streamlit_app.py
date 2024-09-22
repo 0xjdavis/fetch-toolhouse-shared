@@ -9,7 +9,7 @@ import threading
 # Set the OpenAI API key correctly
 openai.api_key = st.secrets["OPENAI_KEY"]
 th = Toolhouse(access_token=st.secrets["TOOLHOUSE_KEY"], provider="openai")
-AGENT_MAILBOX_KEY = "911d1aac-059c-4cae-ab16-cfc75362953f"
+AGENT_MAILBOX_KEY = st.secrets["TH_AGENT_MAILBOX_KEY"]
 
 class ToolHouseAIRequest(Model):
     query: str
