@@ -84,7 +84,7 @@ async def get_answer(query):
             execution_result_code = execution_result
 
         return generated_code, execution_result_code
-    except openai.error.OpenAIError as e:
+    except openai.OpenAIError as e:
         st.error(f"OpenAI API error: {str(e)}")
         raise
     except Exception as e:
