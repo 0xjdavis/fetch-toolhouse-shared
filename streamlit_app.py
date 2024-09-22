@@ -4,24 +4,48 @@ from toolhouse import Toolhouse
 from uagents import Agent, Context, Model, Protocol
 from uagents.setup import fund_agent_if_low
 import asyncio
+import threading
 
 # Set the OpenAI API key correctly
-openai.api_key = st.secrets["OPENAI_KEY"]
-th = Toolhouse(access_token=st.secrets["TOOLHOUSE_KEY"], provider="openai")
+openai.api_key = st.secrets["OPENAI_API_KEY"]
+th = Toolhouse(access_token=st.secrets["TOOLHOUSEAI_API_KEY"], provider="openai")
 AGENT_MAILBOX_KEY = "911d1aac-059c-4cae-ab16-cfc75362953f"
 
 class ToolHouseAIRequest(Model):
     query: str
 
-agent = Agent(
-    name="toolhouseai-test-agent",
-    seed="toolhouseai-seed",
-    mailbox=f"{AGENT_MAILBOX_KEY}@https://agentverse.ai"
-)
-
-fund_agent_if_low(agent.wallet.address())
-
 toolhouseai_proto = Protocol(name="ToolhouseAI-Protocol", version="0.1.0")
+
+def initialize_agent():
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    
+    agent = Agent(
+        name="toolhouseai-test-agent",
+        seed="toolhouseai-seed",
+        mailbox=f"{AGENT_MAILBOX_KEY}@https://agentverse.ai"
+    )
+
+    fund_agent_if_low(agent.wallet.address())
+
+    @agent.on_event("startup")
+    async def introduce(ctx: Context):
+        ctx.logger.info(ctx.agent.address)
+
+    @toolhouseai_proto.on_message(ToolHouseAIRequest)
+    async def handle_request(ctx: Context, sender: str, msg: ToolHouseAIRequest):
+        ctx.logger.info(f"Received query : {msg.query}")
+        try:
+            generated_code, execution_result = await get_answer(msg.query)
+            ctx.logger.info(execution_result)
+            return execution_result
+        except Exception as err:
+            ctx.logger.error(err)
+            return str(err)
+
+    agent.include(toolhouseai_proto, publish_manifest=True)
+    
+    return agent, loop
 
 async def get_answer(query):
     # Define the OpenAI model we want to use
@@ -63,22 +87,16 @@ async def get_answer(query):
 
     return generated_code, execution_result_code
 
-@agent.on_event("startup")
-async def introduce(ctx: Context):
-    ctx.logger.info(ctx.agent.address)
+# Initialize agent and event loop
+agent, loop = initialize_agent()
 
-@toolhouseai_proto.on_message(ToolHouseAIRequest)
-async def handle_request(ctx: Context, sender: str, msg: ToolHouseAIRequest):
-    ctx.logger.info(f"Received query : {msg.query}")
-    try:
-        generated_code, execution_result = await get_answer(msg.query)
-        ctx.logger.info(execution_result)
-        return execution_result
-    except Exception as err:
-        ctx.logger.error(err)
-        return str(err)
+# Run the agent in a separate thread
+def run_agent():
+    asyncio.set_event_loop(loop)
+    loop.run_until_complete(agent.run())
 
-agent.include(toolhouseai_proto, publish_manifest=True)
+agent_thread = threading.Thread(target=run_agent, daemon=True)
+agent_thread.start()
 
 # Streamlit app
 st.title("ToolhouseAI Agent Interface")
@@ -100,9 +118,3 @@ if st.button("Submit"):
                 st.error(f"An error occurred: {str(e)}")
     else:
         st.warning("Please enter a query.")
-
-# Run the agent in the background
-if __name__ == "__main__":
-    import threading
-    agent_thread = threading.Thread(target=agent.run)
-    agent_thread.start()
