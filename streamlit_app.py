@@ -1,6 +1,6 @@
 import streamlit as st
 import openai
-import groq
+# from groq import Groq
 from toolhouse import Toolhouse
 from uagents import Agent, Context, Model, Protocol
 from uagents.setup import fund_agent_if_low
@@ -8,7 +8,6 @@ import asyncio
 import threading
 
 # ADD API KEYS
-
 openai.api_key = st.secrets["OPENAI_KEY"]
 
 th = Toolhouse(access_token=st.secrets["TOOLHOUSE_KEY"], provider="openai")
