@@ -7,7 +7,7 @@ import asyncio
 import threading
 
 # API KEYS
-groq_client = groq.Groq(api_key=st.secrets["GROQ_API_KEY"])
+groq_client = groq.Groq(api_key=st.secrets["GROQ_KEY"])
 th = Toolhouse(access_token=st.secrets["TOOLHOUSE_KEY"], provider="groq")
 AGENT_MAILBOX_KEY = st.secrets["TH_AGENT_MAILBOX_KEY"]
 th.set_metadata("id", "user_id")
