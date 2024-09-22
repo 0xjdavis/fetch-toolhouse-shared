@@ -10,6 +10,7 @@ import threading
 openai.api_key = st.secrets["OPENAI_KEY"]
 th = Toolhouse(access_token=st.secrets["TOOLHOUSE_KEY"], provider="openai")
 AGENT_MAILBOX_KEY = st.secrets["TH_AGENT_MAILBOX_KEY"]
+th.set_metadata("id", "user_id")
 
 class ToolHouseAIRequest(Model):
     query: str
