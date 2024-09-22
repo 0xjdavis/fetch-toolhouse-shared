@@ -1,25 +1,21 @@
 import streamlit as st
 import openai
-# from groq import Groq
 from toolhouse import Toolhouse
 from uagents import Agent, Context, Model, Protocol
 from uagents.setup import fund_agent_if_low
 import asyncio
 import threading
 
-# ADD API KEYS
+# API KEYS
 openai.api_key = st.secrets["OPENAI_KEY"]
-
 th = Toolhouse(access_token=st.secrets["TOOLHOUSE_KEY"], provider="openai")
 AGENT_MAILBOX_KEY = st.secrets["TH_AGENT_MAILBOX_KEY"]
 
-# GROQ_KEY = st.secrets["GROQ_KEY"]
-
-# TOOLHOUSE
 class ToolHouseAIRequest(Model):
     query: str
 
 toolhouseai_proto = Protocol(name="ToolhouseAI-Protocol", version="0.1.0")
+
 
 # AGENT
 def initialize_agent():
@@ -53,14 +49,12 @@ def initialize_agent():
     
     return agent, loop
 
+
+# OPEN AI QUERY
 async def get_answer(query):
     # Define the OpenAI model we want to use
     # MODEL = 'gpt-4'
     MODEL = 'gpt-4o-mini'
-
-    # GROQ
-    #client = Groq(api_key=os.environ.get('GROQ_API_KEY'))
-    #MODEL = 'llama3.1-70b-8192'
 
     messages = [{
         "role": "user",
@@ -109,9 +103,8 @@ def run_agent():
 agent_thread = threading.Thread(target=run_agent, daemon=True)
 agent_thread.start()
 
-
-# APP
-st.title("Fetch & Toolhouse Code Interpreter Agent")
+# Streamlit app
+st.title("Toolhouse & Fetch Agent with Code Interpreter")
 
 query = st.text_input("Enter your query:")
 
