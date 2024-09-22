@@ -1,14 +1,8 @@
-
-
-
-
 import streamlit as st
 import openai
 from toolhouse import Toolhouse
 from uagents import Agent, Context, Model, Protocol
-from uagents.models import ErrorMessage
 from uagents.setup import fund_agent_if_low
-from ai_engine import UAgentResponse, UAgentResponseType
 import asyncio
 
 # Set the OpenAI API key correctly
@@ -73,24 +67,16 @@ async def get_answer(query):
 async def introduce(ctx: Context):
     ctx.logger.info(ctx.agent.address)
 
-@toolhouseai_proto.on_message(ToolHouseAIRequest, replies={UAgentResponse, ErrorMessage})
+@toolhouseai_proto.on_message(ToolHouseAIRequest)
 async def handle_request(ctx: Context, sender: str, msg: ToolHouseAIRequest):
     ctx.logger.info(f"Received query : {msg.query}")
     try:
         generated_code, execution_result = await get_answer(msg.query)
         ctx.logger.info(execution_result)
+        return execution_result
     except Exception as err:
         ctx.logger.error(err)
-        await ctx.send(
-            sender,
-            ErrorMessage(
-                error=str(err)
-            ),
-        )
-        return
-    await ctx.send(
-        sender, UAgentResponse(message=execution_result, type=UAgentResponseType.FINAL)
-    )
+        return str(err)
 
 agent.include(toolhouseai_proto, publish_manifest=True)
 
@@ -102,13 +88,16 @@ query = st.text_input("Enter your query:")
 if st.button("Submit"):
     if query:
         with st.spinner("Processing your query..."):
-            generated_code, execution_result = asyncio.run(get_answer(query))
-            
-            st.subheader("Generated Code:")
-            st.code(generated_code, language="python")
-            
-            st.subheader("Execution Result:")
-            st.code(execution_result, language="python")
+            try:
+                generated_code, execution_result = asyncio.run(get_answer(query))
+                
+                st.subheader("Generated Code:")
+                st.code(generated_code, language="python")
+                
+                st.subheader("Execution Result:")
+                st.code(execution_result, language="python")
+            except Exception as e:
+                st.error(f"An error occurred: {str(e)}")
     else:
         st.warning("Please enter a query.")
 
