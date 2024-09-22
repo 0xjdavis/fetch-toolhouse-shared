@@ -1,5 +1,5 @@
 import streamlit as st
-import openai
+import groq
 from toolhouse import Toolhouse
 from uagents import Agent, Context, Model, Protocol
 from uagents.setup import fund_agent_if_low
@@ -7,8 +7,8 @@ import asyncio
 import threading
 
 # API KEYS
-openai.api_key = st.secrets["OPENAI_KEY"]
-th = Toolhouse(access_token=st.secrets["TOOLHOUSE_KEY"], provider="openai")
+groq_client = groq.Groq(api_key=st.secrets["GROQ_API_KEY"])
+th = Toolhouse(access_token=st.secrets["TOOLHOUSE_KEY"], provider="groq")
 AGENT_MAILBOX_KEY = st.secrets["TH_AGENT_MAILBOX_KEY"]
 th.set_metadata("id", "user_id")
 
@@ -17,12 +17,11 @@ class ToolHouseAIRequest(Model):
 
 toolhouseai_proto = Protocol(name="ToolhouseAI-Protocol", version="0.1.0")
 
-
 # AGENT
 def initialize_agent():
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
-    
+
     agent = Agent(
         name="toolhouseai-test-agent",
         seed="toolhouseai-seed",
@@ -47,25 +46,22 @@ def initialize_agent():
             return str(err)
 
     agent.include(toolhouseai_proto, publish_manifest=True)
-    
+
     return agent, loop
 
-
-# OPEN AI QUERY
+# GROQ QUERY
 async def get_answer(query):
-    # Define the OpenAI model we want to use
-    MODEL = 'gpt-4'
-    #MODEL = 'gpt-4o-mini'
+    # Define the Groq model we want to use
+    MODEL = 'mixtral-8x7b-32768'  # You can change this to other Groq models as needed
 
     messages = [{
         "role": "user",
         "content": query
     }]
 
-    response = openai.chat.completions.create(
+    response = groq_client.chat.completions.create(
         model=MODEL,
         messages=messages,
-        # Passes Code Execution as a tool
         tools=th.get_tools()
     )
 
@@ -76,7 +72,7 @@ async def get_answer(query):
     # and appends it to the context
     messages += th.run_tools(response)
 
-    final_response = openai.chat.completions.create(
+    final_response = groq_client.chat.completions.create(
         model=MODEL,
         messages=messages,
         tools=th.get_tools()
@@ -114,10 +110,10 @@ if st.button("Submit"):
         with st.spinner("Processing your query..."):
             try:
                 generated_code, execution_result = asyncio.run(get_answer(query))
-                
+
                 st.subheader("Response:")
                 st.code(generated_code, language="python")
-                
+
                 st.subheader("Code:")
                 st.code(execution_result, language="python")
             except Exception as e:
