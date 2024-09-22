@@ -5,11 +5,21 @@ from uagents import Agent, Context, Model, Protocol
 from uagents.setup import fund_agent_if_low
 import asyncio
 import threading
+import uuid
 
 # API KEYS
 openai.api_key = st.secrets["OPENAI_KEY"]
-th = Toolhouse(access_token=st.secrets["TOOLHOUSE_KEY"], provider="openai")
+TOOLHOUSE_KEY = st.secrets["TOOLHOUSE_KEY"]
 AGENT_MAILBOX_KEY = st.secrets["TH_AGENT_MAILBOX_KEY"]
+
+# Generate a unique user ID for Toolhouse
+USER_ID = str(uuid.uuid4())
+
+th = Toolhouse(
+    access_token=TOOLHOUSE_KEY,
+    provider="openai",
+    user_id=USER_ID  # Add the user ID here
+)
 
 class ToolHouseAIRequest(Model):
     query: str
@@ -120,5 +130,9 @@ if st.button("Submit"):
                 st.code(execution_result, language="python")
             except Exception as e:
                 st.error(f"An error occurred: {type(e).__name__}: {str(e)}")
+                st.error("Please check your API keys and try again.")
     else:
         st.warning("Please enter a query.")
+
+# Display the generated user ID
+st.sidebar.write(f"User ID: {USER_ID}")
