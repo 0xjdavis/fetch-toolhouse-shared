@@ -52,8 +52,9 @@ def initialize_agent():
 # GROQ QUERY
 async def get_answer(query):
     # Define the Groq model we want to use
-    #MODEL = 'mixtral-8x7b-32768'  # You can change this to other Groq models as needed
-    MODEL = 'llama2-70b-4096'  # for LLaMA 2 70B
+    #MODEL = 'mixtral-8x7b-32768'  # No result, but got code. 
+    #MODEL = 'llama2-70b-4096'  # Don't use this.
+    MODEL = 'llama3-groq-70b-8192-tool-use-preview:"
     # MODEL = 'gemma-7b-it' 
     
     messages = [{
