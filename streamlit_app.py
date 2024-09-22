@@ -16,7 +16,6 @@ class ToolHouseAIRequest(Model):
 
 toolhouseai_proto = Protocol(name="ToolhouseAI-Protocol", version="0.1.0")
 
-
 # AGENT
 def initialize_agent():
     loop = asyncio.new_event_loop()
@@ -49,11 +48,8 @@ def initialize_agent():
     
     return agent, loop
 
-
 # OPEN AI QUERY
 async def get_answer(query):
-    # Define the OpenAI model we want to use
-    # MODEL = 'gpt-4'
     MODEL = 'gpt-4o-mini'
 
     messages = [{
@@ -61,36 +57,39 @@ async def get_answer(query):
         "content": query
     }]
 
-    response = openai.chat.completions.create(
-        model=MODEL,
-        messages=messages,
-        # Passes Code Execution as a tool
-        tools=th.get_tools()
-    )
+    try:
+        response = openai.chat.completions.create(
+            model=MODEL,
+            messages=messages,
+            tools=th.get_tools()
+        )
 
-    # Get the generated code
-    generated_code = response.choices[0].message.content
+        generated_code = response.choices[0].message.content
 
-    # Runs the Code Execution tool, gets the result,
-    # and appends it to the context
-    messages += th.run_tools(response)
+        messages += th.run_tools(response)
 
-    final_response = openai.chat.completions.create(
-        model=MODEL,
-        messages=messages,
-        tools=th.get_tools()
-    )
+        final_response = openai.chat.completions.create(
+            model=MODEL,
+            messages=messages,
+            tools=th.get_tools()
+        )
 
-    execution_result = final_response.choices[0].message.content
+        execution_result = final_response.choices[0].message.content
 
-    if "```python" in execution_result and "```" in execution_result:
-        start = execution_result.find("```python") + len("```python")
-        end = execution_result.find("```", start)
-        execution_result_code = execution_result[start:end].strip()
-    else:
-        execution_result_code = execution_result
+        if "```python" in execution_result and "```" in execution_result:
+            start = execution_result.find("```python") + len("```python")
+            end = execution_result.find("```", start)
+            execution_result_code = execution_result[start:end].strip()
+        else:
+            execution_result_code = execution_result
 
-    return generated_code, execution_result_code
+        return generated_code, execution_result_code
+    except openai.error.OpenAIError as e:
+        st.error(f"OpenAI API error: {str(e)}")
+        raise
+    except Exception as e:
+        st.error(f"An unexpected error occurred: {str(e)}")
+        raise
 
 # Initialize agent and event loop
 agent, loop = initialize_agent()
@@ -120,6 +119,6 @@ if st.button("Submit"):
                 st.subheader("Code:")
                 st.code(execution_result, language="python")
             except Exception as e:
-                st.error(f"An error occurred: {str(e)}")
+                st.error(f"An error occurred: {type(e).__name__}: {str(e)}")
     else:
         st.warning("Please enter a query.")
