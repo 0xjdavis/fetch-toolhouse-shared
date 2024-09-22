@@ -54,8 +54,8 @@ def initialize_agent():
 # OPEN AI QUERY
 async def get_answer(query):
     # Define the OpenAI model we want to use
-    # MODEL = 'gpt-4'
-    MODEL = 'gpt-4o-mini'
+    MODEL = 'gpt-4'
+    #MODEL = 'gpt-4o-mini'
 
     messages = [{
         "role": "user",
