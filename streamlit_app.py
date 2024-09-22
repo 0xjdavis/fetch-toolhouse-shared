@@ -49,6 +49,7 @@ def initialize_agent():
 
 async def get_answer(query):
     # Define the OpenAI model we want to use
+    # MODEL = 'gpt-4'
     MODEL = 'gpt-4o-mini'
 
     messages = [{
@@ -109,10 +110,10 @@ if st.button("Submit"):
             try:
                 generated_code, execution_result = asyncio.run(get_answer(query))
                 
-                st.subheader("Generated Code:")
+                st.subheader("Response:")
                 st.code(generated_code, language="python")
                 
-                st.subheader("Execution Result:")
+                st.subheader("Code:")
                 st.code(execution_result, language="python")
             except Exception as e:
                 st.error(f"An error occurred: {str(e)}")
