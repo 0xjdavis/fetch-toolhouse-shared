@@ -7,9 +7,9 @@ import asyncio
 import threading
 
 # API KEYS
-groq_client = groq.Groq(api_key=st.secrets["GROQ_KEY"])
-th = Toolhouse(access_token=st.secrets["TOOLHOUSE_KEY"])
-AGENT_MAILBOX_KEY = st.secrets["TH_AGENT_MAILBOX_KEY"]
+groq_client = groq.Groq(api_key=st.secrets["GROQ_KEY"]) # Groq
+AGENT_MAILBOX_KEY = st.secrets["TH_AGENT_MAILBOX_KEY"] # Fetch
+th = Toolhouse(access_token=st.secrets["TOOLHOUSE_KEY"]) # Toolhouse
 th.set_metadata("id", "user_id")
 
 class ToolHouseAIRequest(Model):
@@ -51,11 +51,17 @@ def initialize_agent():
 
 # GROQ QUERY
 async def get_answer(query):
+
+
+    MODEL = st.selectbox(
+        "Select the model:",
+        ("llama3-8b-8192", "llama3-groq-70b-8192-tool-use-preview", "mixtral-8x7b-32768", "gemma-7b-it"),
+    )
     # Define the Groq model we want to use
     #MODEL = 'mixtral-8x7b-32768'  # No result, but got code. 
     #MODEL = 'llama2-70b-4096'  # Don't use this.
     #MODEL = 'llama3-groq-70b-8192-tool-use-preview'
-    MODEL = 'llama3-8b-8192'
+    # MODEL = 'llama3-8b-8192'
     # MODEL = 'gemma-7b-it' 
     
     messages = [{
