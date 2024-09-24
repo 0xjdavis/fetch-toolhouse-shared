@@ -12,11 +12,9 @@ AGENT_MAILBOX_KEY = st.secrets["TH_AGENT_MAILBOX_KEY"] # Fetch
 th = Toolhouse(access_token=st.secrets["TOOLHOUSE_KEY"]) # Toolhouse
 th.set_metadata("id", "user_id")
 
-
-
 # Setting page layout
 st.set_page_config(
-    page_title="Generate and run code using a Fetch Agent with Toolhouse Code Interpreter",
+    page_title="Generate and run code using Groq and a Fetch Agent with Toolhouse Code Interpreter",
     page_icon="✨",
     layout="centered",
     initial_sidebar_state="expanded"
@@ -24,7 +22,7 @@ st.set_page_config(
 
 # Sidebar for API Key and User Info
 st.sidebar.header("About App")
-st.sidebar.markdown('This is an app utilizes a Fetch.ai Agent to call Toolhouse code interpreter tool to generate and run code, created by <a href="https://ai.jdavis.xyz" target="_blank">0xjdavis</a>.', unsafe_allow_html=True)
+st.sidebar.markdown('This is an app utilizes Groq and a Fetch.ai Agent with Toolhouse code interpreter to generate and run code, created by <a href="https://ai.jdavis.xyz" target="_blank">0xjdavis</a>.', unsafe_allow_html=True)
 
 # Select Groq Model
 MODEL = st.sidebar.selectbox(
