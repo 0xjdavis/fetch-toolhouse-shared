@@ -146,7 +146,7 @@ agent_thread = threading.Thread(target=run_agent, daemon=True)
 agent_thread.start()
 
 # APP
-st.title("Generate and Run Code"
+st.title("Generate and Run Code")
 st.caption("Fetch Agent with Toolhouse Code Interpreter")
 
 query = st.text_input("Enter your query:")
