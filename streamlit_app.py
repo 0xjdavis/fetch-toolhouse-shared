@@ -12,6 +12,14 @@ AGENT_MAILBOX_KEY = st.secrets["TH_AGENT_MAILBOX_KEY"] # Fetch
 th = Toolhouse(access_token=st.secrets["TOOLHOUSE_KEY"]) # Toolhouse
 th.set_metadata("id", "user_id")
 
+
+
+
+MODEL = st.sidebar.selectbox(
+    "Select the model:",
+    ("llama3-8b-8192", "llama3-groq-70b-8192-tool-use-preview", "mixtral-8x7b-32768", "gemma-7b-it"),
+)
+
 class ToolHouseAIRequest(Model):
     query: str
 
@@ -53,11 +61,8 @@ def initialize_agent():
 async def get_answer(query):
 
 
-    MODEL = st.selectbox(
-        "Select the model:",
-        ("llama3-8b-8192", "llama3-groq-70b-8192-tool-use-preview", "mixtral-8x7b-32768", "gemma-7b-it"),
-    )
     # Define the Groq model we want to use
+    # USING SELECT FROM ABOVE!!!!!!
     #MODEL = 'mixtral-8x7b-32768'  # No result, but got code. 
     #MODEL = 'llama2-70b-4096'  # Don't use this.
     #MODEL = 'llama3-groq-70b-8192-tool-use-preview'
